@@ -372,13 +372,31 @@ func (socket *mongoSocket) SimpleQuery(op *queryOp) (data []byte, err error) {
 	return data, err
 }
 
+////https://github.com/cezarsa/mgo/commit/9810e051e60e10f5bd26c53d7bcae7f341e2b017
+
+var bytesBufferPool = sync.Pool{
+	New: func() interface{} {
+
+		return make([]byte, 0, 256)
+	},
+}
+
+
 func (socket *mongoSocket) Query(ops ...interface{}) (err error) {
 
 	if lops := socket.flushLogout(); len(lops) > 0 {
 		ops = append(lops, ops...)
 	}
+	////https://github.com/cezarsa/mgo/commit/9810e051e60e10f5bd26c53d7bcae7f341e2b017
 
-	buf := make([]byte, 0, 256)
+	//buf := make([]byte, 0, 256)
+	
+	buf := bytesBufferPool.Get().([]byte)
+
+	defer func() {
+		bytesBufferPool.Put(buf[:0])
+	}()
+
 
 	// Serialize operations synchronously to avoid interrupting
 	// other goroutines while we can't really be sending data.
