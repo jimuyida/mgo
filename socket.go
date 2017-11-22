@@ -670,6 +670,8 @@ func addCString(b []byte, s string) []byte {
 	return b
 }
 
+//https://github.com/cezarsa/mgo/commit/9810e051e60e10f5bd26c53d7bcae7f341e2b017
+/*
 func addBSON(b []byte, doc interface{}) ([]byte, error) {
 	if doc == nil {
 		return append(b, 5, 0, 0, 0, 0), nil
@@ -679,6 +681,17 @@ func addBSON(b []byte, doc interface{}) ([]byte, error) {
 		return b, err
 	}
 	return append(b, data...), nil
+}
+*/
+func addBSON(b []byte, doc interface{}) ([]byte, error) {
+	if doc == nil {
+		return append(b, 5, 0, 0, 0, 0), nil
+	}
+	data, err := bson.MarshalBuffer(doc, b)
+	if err != nil {
+		return b, err
+	}
+	return data, nil
 }
 
 func setInt32(b []byte, pos int, i int32) {
